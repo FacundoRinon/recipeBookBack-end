@@ -7,7 +7,7 @@ const userController = require("../controllers/userController");
 
 router.get("/", userController.index);
 // router.get("/profile", userController.show);
-// router.post("/", userController.store);
+router.post("/", userController.store);
 // router.post("/create", userController.create);
 // router.update("/../", userController.edit);
 // router.patch("/", userController.update);
