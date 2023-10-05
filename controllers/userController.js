@@ -1,8 +1,45 @@
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const formidable = require("formidable");
 const path = require("path");
 const fs = require("fs");
+
+async function login(req, res) {
+  console.log("req.body:", req.body);
+  const username = await User.findOne({ username: req.body.username });
+  const email = await User.findOne({ email: req.body.username });
+  let user;
+  if (username) {
+    user = username;
+  } else if (email) {
+    user = email;
+  }
+  if (!user) {
+    return res.json("Credenciales invalidas");
+  } else if (!(await bcrypt.compare(req.body.password, user.password))) {
+    return res.json("Credenciales invalidas");
+  } else {
+    const token = jwt.sign(
+      {
+        id: user._id,
+      },
+      process.env.SESSION_SECRET,
+    );
+    return res.json({
+      token,
+      id: user._id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      username: user.username,
+      email: username.email,
+      avatar: user.avatar,
+      following: user.following,
+      followers: user.followers,
+      recipes: user.recipes,
+    });
+  }
+}
 
 async function index(req, res) {
   const users = await User.find().sort({ createdAt: -1 });
@@ -68,6 +105,7 @@ async function update(req, res) {}
 async function destroy(req, res) {}
 
 module.exports = {
+  login,
   index,
   show,
   create,
