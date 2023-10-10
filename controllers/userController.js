@@ -37,6 +37,7 @@ async function login(req, res) {
       following: user.following,
       followers: user.followers,
       recipes: user.recipes,
+      cookingBook: user.cookingBook,
     });
   }
 }
@@ -70,6 +71,7 @@ async function store(req, res) {
         following: [],
         followers: [],
         recipes: [],
+        cookingBook: [],
       });
       await user.save();
       const newUser = true;
@@ -91,6 +93,7 @@ async function store(req, res) {
         following: user.following,
         followers: user.followers,
         recipes: user.recipes,
+        cookingBook: user.cookingBook,
       });
     }
   } else {

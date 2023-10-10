@@ -14,7 +14,8 @@ const userSchema = new Schema(
     following: [{ type: Schema.Types.ObjectId, ref: "User" }],
     createdAt: Date,
     updatedAt: Date,
-    recipes: [{ type: Schema.Types.ObjectId, ref: "Recipe" }],
+    recipes: [{ type: Schema.Types.ObjectId, ref: "Recipes" }],
+    cookingBook: [{ type: Schema.Types.ObjectId, ref: "Recipes" }],
   },
   { timestamps: true },
 );
