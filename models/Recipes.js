@@ -1,8 +1,12 @@
 const { mongoose } = require("../db");
 const Schema = mongoose.Schema;
 
-const recipesSchema = new Schema(
+const recipeSchema = new Schema(
   {
+    author: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
     name: String,
     description: {
       type: String,
@@ -15,10 +19,17 @@ const recipesSchema = new Schema(
     },
     ingredients: [
       {
-        ingredient: String,
-        cuantity: String,
+        name: {
+          type: String,
+          required: true,
+        },
+        quantity: {
+          type: String, // O el tipo de datos adecuado para la cantidad (número, por ejemplo)
+          required: true,
+        },
       },
     ],
+
     instructions: String,
     likes: [
       {
@@ -43,13 +54,13 @@ const recipesSchema = new Schema(
   { timestamps: true },
 );
 
-recipeSchemaSchema.methods.toJSON = function () {
+recipeSchema.methods.toJSON = function () {
   const recipes = this.toObject();
   recipes.id = recipes._id.toString();
   delete recipes._id;
   return recipes;
 };
 
-const Recipes = mongoose.model("Recipes", recipesSchema);
+const Recipes = mongoose.model("Recipes", recipeSchema);
 
 module.exports = Recipes;

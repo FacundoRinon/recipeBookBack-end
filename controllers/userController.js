@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Recipes = require("../models/Recipes");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const formidable = require("formidable");
@@ -6,39 +7,63 @@ const path = require("path");
 const fs = require("fs");
 
 async function login(req, res) {
-  console.log("req.body:", req.body);
-  const username = await User.findOne({ username: req.body.username });
-  const email = await User.findOne({ email: req.body.username });
-  let user;
-  if (username) {
-    user = username;
-  } else if (email) {
-    user = email;
-  }
-  if (!user) {
-    return res.json("Credenciales invalidas");
-  } else if (!(await bcrypt.compare(req.body.password, user.password))) {
-    return res.json("Credenciales invalidas");
-  } else {
-    const token = jwt.sign(
+  try {
+    const username = await User.findOne({ username: req.body.username });
+    const email = await User.findOne({ email: req.body.username });
+    let user;
+
+    if (username) {
+      user = username;
+    } else if (email) {
+      user = email;
+    }
+
+    if (!user) {
+      return res.status(400).json({ error: "Credenciales inválidas" });
+    }
+
+    const populatedUser = await User.populate(user, [
       {
-        id: user._id,
+        path: "recipes",
+        populate: {
+          path: "author",
+          model: "User",
+          select: "id firstname lastname username email avatar",
+        },
+        options: { sort: { createdAt: -1 } },
       },
-      process.env.SESSION_SECRET,
-    );
+      {
+        path: "cookingBook",
+        populate: {
+          path: "author",
+          model: "User",
+          select: "id firstname lastname username email avatar",
+        },
+        options: { sort: { createdAt: -1 } },
+      },
+    ]);
+
+    if (!(await bcrypt.compare(req.body.password, populatedUser.password))) {
+      return res.status(400).json({ error: "Credenciales inválidas" });
+    }
+
+    const token = jwt.sign({ id: populatedUser._id }, process.env.SESSION_SECRET);
     return res.json({
       token,
-      id: user._id,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      username: user.username,
-      email: username.email,
-      avatar: user.avatar,
-      following: user.following,
-      followers: user.followers,
-      recipes: user.recipes,
-      cookingBook: user.cookingBook,
+      id: populatedUser._id,
+      firstname: populatedUser.firstname,
+      lastname: populatedUser.lastname,
+      username: populatedUser.username,
+      email: populatedUser.email,
+      avatar: populatedUser.avatar,
+      following: populatedUser.following,
+      followers: populatedUser.followers,
+      recipes: populatedUser.recipes,
+      cookingBook: populatedUser.cookingBook,
     });
+  } catch (error) {
+    console.error("Error en el login:", error);
+    return res.status(500).json({ error: "Error en el login" });
   }
 }
 
@@ -105,6 +130,44 @@ async function edit(req, res) {}
 
 async function update(req, res) {}
 
+async function follows(req, res) {
+  try {
+    const followed = await User.findById(req.params.id);
+    const user = await User.findById(req.auth.id);
+    if (followed.followers.includes(req.auth.id)) {
+      followed.followers.pull(req.auth.id);
+      user.following.pull(req.params.id);
+    } else {
+      followed.followers.push(req.auth.id);
+      user.following.push(req.params.id);
+    }
+    await followed.save();
+    await user.save();
+    res.status(200).json({ message: "toggle follow successfull" });
+  } catch (error) {
+    console.log("recipeController-follows", error);
+  }
+}
+
+async function addToBook(req, res) {
+  try {
+    const recipe = await Recipes.findById(req.params.id);
+    const user = await User.findById(req.auth.id);
+
+    if (user.cookingBook.includes(recipe._id)) {
+      user.cookingBook.pull(recipe._id);
+      recipe.added.pull(user._id);
+    } else {
+      user.cookingBook.push(recipe._id);
+      recipe.added.push(user._id);
+    }
+    await user.save();
+    await recipe.save();
+  } catch (error) {
+    console.log("error in userController - addtoBook", error);
+  }
+}
+
 async function destroy(req, res) {}
 
 module.exports = {
@@ -115,5 +178,7 @@ module.exports = {
   store,
   edit,
   update,
+  follows,
+  addToBook,
   destroy,
 };
