@@ -88,6 +88,33 @@ async function show(req, res) {}
 
 async function create(req, res) {}
 
+async function getUser(req, res) {
+  const user = await User.findById(req.params.id);
+
+  const populatedUser = await User.populate(user, [
+    {
+      path: "recipes",
+      populate: {
+        path: "author",
+        model: "User",
+        select: "id firstname lastname username email avatar",
+      },
+      options: { sort: { createdAt: -1 } },
+    },
+    {
+      path: "cookingBook",
+      populate: {
+        path: "author",
+        model: "User",
+        select: "id firstname lastname username email avatar",
+      },
+      options: { sort: { createdAt: -1 } },
+    },
+  ]);
+
+  return res.json(populatedUser);
+}
+
 async function store(req, res) {
   const usernameExist = await User.findOne({ username: req.body.username });
   const emailExist = await User.findOne({ email: req.body.email });
@@ -243,6 +270,7 @@ module.exports = {
   index,
   show,
   create,
+  getUser,
   store,
   edit,
   update,
