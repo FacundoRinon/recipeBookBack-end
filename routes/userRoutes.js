@@ -12,7 +12,7 @@ router.get("/", userController.index);
 router.post("/", userController.store);
 // router.post("/create", userController.create);
 // router.update("/../", userController.edit);
-// router.patch("/", userController.update);
+router.patch("/", userController.update);
 router.patch("/:id", userController.follows);
 router.patch("/book/:id", userController.addToBook);
 // router.delete("/:id", userController.destroy);

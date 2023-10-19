@@ -5,6 +5,15 @@ const bcrypt = require("bcryptjs");
 const formidable = require("formidable");
 const path = require("path");
 const fs = require("fs");
+const { createClient } = require("@supabase/supabase-js");
+
+if (!process.env.SUPABASE_URL) {
+  throw new error("no supabaseUrl");
+}
+
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
+  auth: { persistSession: false },
+});
 
 async function login(req, res) {
   try {
@@ -128,7 +137,66 @@ async function store(req, res) {
 
 async function edit(req, res) {}
 
-async function update(req, res) {}
+async function update(req, res) {
+  const id = req.auth.id;
+  const form = formidable({
+    multiples: false,
+    keepExtensions: true,
+  });
+  form.parse(req, async (err, fields, files) => {
+    let avatarFileName;
+    if (files.avatar) {
+      const ext = path.extname(files.avatar.filepath);
+      avatarFileName = `image_${Date.now()}${ext}`;
+
+      const { data, error } = await supabase.storage
+        .from("recipe")
+        .upload(avatarFileName, fs.createReadStream(files.avatar.filepath), {
+          cacheControl: "3600",
+          upsert: false,
+          contextType: files.avatar.mimetype,
+          duplex: "half",
+        });
+    } else {
+      const thisUser = await User.findOne({ _id: id });
+      avatarFileName = thisUser.avatar;
+    }
+    const { firstname, lastname, username } = fields;
+    const values = {
+      firstname,
+      lastname,
+      username,
+      avatar: avatarFileName,
+    };
+
+    const existingUsername = await User.findOne({ username });
+    const thisUser = await User.findOne({ _id: id });
+
+    if (existingUsername && existingUsername.id !== thisUser.id) {
+      return res.json("ExistingUsername");
+    } else {
+      const updatedValues = {
+        $set: values,
+      };
+
+      const token = jwt.sign({ _id: id }, process.env.SESSION_SECRET);
+      const response = await User.findOneAndUpdate({ _id: id }, updatedValues, { new: true });
+      return res.json({
+        token,
+        id: response._id,
+        firstname: response.firstname,
+        lastname: response.lastname,
+        email: response.email,
+        username: response.username,
+        avatar: response.avatar,
+        recipes: response.recipes,
+        cookingBook: response.cookingBook,
+        followers: response.followers,
+        following: response.following,
+      });
+    }
+  });
+}
 
 async function follows(req, res) {
   try {
