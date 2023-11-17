@@ -9,8 +9,7 @@ router.get("/", recipeController.index);
 router.get("/:id", recipeController.show);
 router.post("/", recipeController.store);
 // router.post("/create", recipeController.create);
-// router.update("/../", recipeController.edit);
-// router.patch("/", recipeController.update);
-// router.delete("/:id", recipeController.destroy);
+router.patch("/:id", recipeController.update);
+router.delete("/:id", recipeController.destroy);
 
 module.exports = router;

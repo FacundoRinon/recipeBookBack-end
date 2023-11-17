@@ -90,7 +90,6 @@ async function create(req, res) {}
 
 async function getUser(req, res) {
   const user = await User.findById(req.params.id);
-
   const populatedUser = await User.populate(user, [
     {
       path: "recipes",
@@ -110,8 +109,15 @@ async function getUser(req, res) {
       },
       options: { sort: { createdAt: -1 } },
     },
+    {
+      path: "followers",
+      options: { sort: { createdAt: -1 } },
+    },
+    {
+      path: "following",
+      options: { sort: { createdAt: -1 } },
+    },
   ]);
-
   return res.json(populatedUser);
 }
 
