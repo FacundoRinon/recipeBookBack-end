@@ -23,6 +23,14 @@ async function index(req, res) {
   }
 }
 
+async function category(req, res) {
+  const requestedCategory = req.params.category;
+  const recipes = await Recipes.find({ category: requestedCategory })
+    .populate("author")
+    .sort({ createdAt: -1 });
+  return res.json(recipes);
+}
+
 async function show(req, res) {
   const recipe = await Recipes.findById(req.params.id);
   const populatedRecipe = await Recipes.populate(recipe, [
@@ -31,7 +39,7 @@ async function show(req, res) {
       select: "id firstname lastname username email avatar",
     },
   ]);
-  return res.json(recipe);
+  return res.json(populatedRecipe);
 }
 
 async function create(req, res) {}
@@ -105,7 +113,6 @@ async function store(req, res) {
 async function edit(req, res) {}
 
 async function update(req, res) {
-  console.log(req.params.id);
   try {
     const id = req.params.id;
     const form = formidable({
@@ -170,7 +177,7 @@ async function update(req, res) {
       }
     });
   } catch (error) {
-    console.log("rompio");
+    console.log(error);
   }
 }
 
@@ -198,6 +205,7 @@ async function destroy(req, res) {
 
 module.exports = {
   index,
+  category,
   show,
   create,
   store,
