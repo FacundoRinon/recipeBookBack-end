@@ -29,7 +29,6 @@ const recipeSchema = new Schema(
         },
       },
     ],
-
     instructions: String,
     likes: [
       {
@@ -50,6 +49,18 @@ const recipeSchema = new Schema(
     //     ref: "User"
     //   },
     // ],
+    score: [
+      {
+        userId: {
+          type: String,
+          required: true,
+        },
+        score: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
   },
   { timestamps: true },
 );
