@@ -11,6 +11,7 @@ router.get("/search/:category", recipeController.category);
 router.post("/", recipeController.store);
 // router.post("/create", recipeController.create);
 router.patch("/:id", recipeController.update);
+router.patch("/score/:id", recipeController.rate);
 router.delete("/:id", recipeController.destroy);
 
 module.exports = router;

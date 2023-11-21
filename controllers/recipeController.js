@@ -36,7 +36,7 @@ async function show(req, res) {
   const populatedRecipe = await Recipes.populate(recipe, [
     {
       path: "author",
-      select: "id firstname lastname username email avatar",
+      select: "id firstname lastname username email avatar score",
     },
   ]);
   return res.json(populatedRecipe);
@@ -91,6 +91,7 @@ async function store(req, res) {
       ingredients,
       instructions,
       avatar: avatarFileName,
+      score: [],
     });
 
     await newRecipe.save();
@@ -171,6 +172,7 @@ async function update(req, res) {
           ingredients: response.ingredients,
           instructions: response.instructions,
           avatar: response.avatar,
+          score: response.score,
         });
       } catch (error) {
         return res.status(500).json({ error: error.message });
@@ -179,6 +181,23 @@ async function update(req, res) {
   } catch (error) {
     console.log(error);
   }
+}
+
+async function rate(req, res) {
+  const recipe = await Recipes.findById(req.params.id);
+  if (!recipe) {
+    return res.status(403).json({ message: "Unauthorized" });
+  }
+  const newScore = req.body;
+  const existingScoreIndex = recipe.score.findIndex((s) => s.userId === newScore.userId);
+
+  if (existingScoreIndex !== -1) {
+    recipe.score[existingScoreIndex] = newScore;
+  } else {
+    recipe.score.push(newScore);
+  }
+  await recipe.save();
+  return res.json(recipe);
 }
 
 async function destroy(req, res) {
@@ -211,5 +230,6 @@ module.exports = {
   store,
   edit,
   update,
+  rate,
   destroy,
 };
