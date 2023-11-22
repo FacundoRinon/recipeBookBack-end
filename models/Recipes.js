@@ -24,12 +24,16 @@ const recipeSchema = new Schema(
           required: true,
         },
         quantity: {
-          type: String, // O el tipo de datos adecuado para la cantidad (número, por ejemplo)
+          type: String,
           required: true,
         },
       },
     ],
-    instructions: String,
+    instructions: [
+      {
+        type: String,
+      },
+    ],
     likes: [
       {
         type: Schema.Types.ObjectId,

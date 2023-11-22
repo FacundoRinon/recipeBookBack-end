@@ -97,8 +97,9 @@ async function store(req, res) {
       });
     });
     const { fields, files, avatarFileName } = await filesPromise;
-    const { name, description, category, instructions } = fields;
+    const { name, description, category } = fields;
     const ingredients = JSON.parse(fields.ingredients);
+    const instructions = JSON.parse(fields.instructions);
 
     if (files.avatar && files.avatar.newFileName > 0) {
       avatar = files.avatar.newFileName;
