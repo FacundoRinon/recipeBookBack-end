@@ -25,10 +25,31 @@ async function index(req, res) {
 
 async function category(req, res) {
   const requestedCategory = req.params.category;
-  const recipes = await Recipes.find({ category: requestedCategory })
+  const categoryRecipes = await Recipes.find({ category: requestedCategory })
     .populate("author")
     .sort({ createdAt: -1 });
-  return res.json(recipes);
+
+  let filteredRecipes = categoryRecipes;
+
+  if (req.params.score && req.params.score !== "0") {
+    const minScore = parseInt(req.params.score);
+
+    filteredRecipes = filteredRecipes.filter((recipe) => {
+      if (recipe.score.length > 0) {
+        const totalScore = recipe.score.reduce((sum, score) => sum + score.score, 0);
+        const avgScore = totalScore / recipe.score.length;
+
+        return avgScore >= minScore;
+      } else {
+        return false;
+      }
+    });
+  }
+  if (req.params.votes && req.params.votes !== "0") {
+    const minVotes = parseInt(req.params.votes);
+    filteredRecipes = filteredRecipes.filter((recipe) => recipe.score.length >= minVotes);
+  }
+  return res.json(filteredRecipes);
 }
 
 async function show(req, res) {
