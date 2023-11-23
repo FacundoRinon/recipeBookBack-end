@@ -144,72 +144,33 @@ async function store(req, res) {
 async function edit(req, res) {}
 
 async function update(req, res) {
+  const recipeId = req.params.id;
+  const { name, description, category } = req.body;
+  const ingredients = JSON.parse(req.body.ingredients);
+  const instructions = JSON.parse(req.body.instructions);
+
   try {
-    const id = req.params.id;
-    const form = formidable({
-      multiples: false,
-      keepExtensions: true,
-    });
+    const recipe = await Recipes.findById(recipeId);
 
-    form.parse(req, async (err, fields, files) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
+    if (!recipe) {
+      return res.status(404).send("Receta no encontrada");
+    }
 
-      let avatarFileName = null;
-      if (files.avatar) {
-        const ext = path.extname(files.avatar.name);
-        avatarFileName = `image_${Date.now()}${ext}`;
+    if (recipe.author.toString() !== req.auth.id) {
+      return res.status(403).send("No tienes permisos para actualizar esta receta");
+    }
+    recipe.name = name || recipe.name;
+    recipe.description = description || recipe.description;
+    recipe.category = category || recipe.category;
+    recipe.ingredients = ingredients || recipe.ingredients;
+    recipe.instructions = instructions || recipe.instructions;
 
-        const { data, error } = await supabase.storage
-          .from("recipe")
-          .upload(avatarFileName, fs.createReadStream(files.avatar.path), {
-            cacheControl: "3600",
-            upsert: false,
-            contentType: files.avatar.type,
-            duplex: "half",
-          });
+    await recipe.save();
 
-        if (error) {
-          return res.status(500).json({ error: error.message });
-        }
-      }
-
-      const { name, category, description, ingredients, instructions } = fields;
-      const values = {
-        name,
-        category,
-        description,
-        ingredients,
-        instructions,
-      };
-
-      if (avatarFileName) {
-        values.avatar = avatarFileName;
-      }
-
-      const updatedValues = {
-        $set: values,
-      };
-
-      try {
-        const response = await Recipes.findOneAndUpdate({ _id: id }, updatedValues, { new: true });
-        return res.json({
-          id: response._id,
-          name: response.name,
-          category: response.category,
-          description: response.description,
-          ingredients: response.ingredients,
-          instructions: response.instructions,
-          avatar: response.avatar,
-          score: response.score,
-        });
-      } catch (error) {
-        return res.status(500).json({ error: error.message });
-      }
-    });
+    res.status(200).send("Receta actualizada correctamente");
   } catch (error) {
-    console.log(error);
+    console.error("Error al actualizar la receta:", error);
+    res.status(500).send("Error al actualizar la receta");
   }
 }
 
