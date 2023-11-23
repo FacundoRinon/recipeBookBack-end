@@ -25,7 +25,6 @@ async function index(req, res) {
 
 async function category(req, res) {
   const requestedCategory = req.params.category;
-  console.log(req.params);
   let filteredRecipes;
   if (req.params.category === "None") {
     const categoryRecipes = await Recipes.find().populate("author").sort({ createdAt: -1 });
