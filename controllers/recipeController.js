@@ -25,11 +25,19 @@ async function index(req, res) {
 
 async function category(req, res) {
   const requestedCategory = req.params.category;
-  const categoryRecipes = await Recipes.find({ category: requestedCategory })
-    .populate("author")
-    .sort({ createdAt: -1 });
+  console.log(req.params);
+  let filteredRecipes;
+  if (req.params.category === "None") {
+    const categoryRecipes = await Recipes.find().populate("author").sort({ createdAt: -1 });
 
-  let filteredRecipes = categoryRecipes;
+    filteredRecipes = categoryRecipes;
+  } else {
+    const categoryRecipes = await Recipes.find({ category: requestedCategory })
+      .populate("author")
+      .sort({ createdAt: -1 });
+
+    filteredRecipes = categoryRecipes;
+  }
 
   if (req.params.score && req.params.score !== "0") {
     const minScore = parseInt(req.params.score);
