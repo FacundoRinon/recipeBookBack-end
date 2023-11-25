@@ -1,12 +1,11 @@
 const { faker } = require("@faker-js/faker");
 const User = require("../models/User");
-
-// faker.setLocale = "es";
+const usersDB = require("./usersDB");
 
 module.exports = async () => {
   const users = [];
 
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 5; i++) {
     const name = faker.person.firstName();
     const lastname = faker.person.lastName();
     const email = faker.internet.email();
@@ -26,15 +25,21 @@ module.exports = async () => {
     );
   }
 
-  //   for (const user of users) {
-  //     const randomCount = Math.floor(Math.random() * users.length) + 1;
-  //     for (let i = 0; i < randomCount; i++) {
-  //       const randomIndex = Math.floor(Math.random() * user.length);
-  //       if (users[randomIndex]._id !== user._id) {
-  //         user.followers.push(users[randomIndex]._id);
-  //       }
-  //     }
-  //   }
+  for (const userDB of usersDB) {
+    const user = new User({
+      _id: userDB._id,
+      firstname: userDB.firstname,
+      lastname: userDB.lastname,
+      username: userDB.username,
+      password: userDB.password,
+      email: userDB.email,
+      avatar: userDB.avatar,
+      followers: [],
+      following: [],
+      recipes: [],
+    });
+    await user.save();
+  }
 
   await User.insertMany(users);
 };
