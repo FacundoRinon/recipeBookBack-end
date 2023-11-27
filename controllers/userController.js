@@ -28,7 +28,7 @@ async function login(req, res) {
     }
 
     if (!user) {
-      return res.status(400).json({ error: "Credenciales inválidas" });
+      return res.json("Invalid credentials");
     }
 
     const populatedUser = await User.populate(user, [
@@ -53,7 +53,7 @@ async function login(req, res) {
     ]);
 
     if (!(await bcrypt.compare(req.body.password, populatedUser.password))) {
-      return res.status(400).json({ error: "Credenciales inválidas" });
+      return res.json("Invalid credentials");
     }
 
     const token = jwt.sign({ id: populatedUser._id }, process.env.SESSION_SECRET);
@@ -87,36 +87,41 @@ async function index(req, res) {
 async function create(req, res) {}
 
 async function show(req, res) {
-  const user = await User.findById(req.params.id);
-  const populatedUser = await User.populate(user, [
-    {
-      path: "recipes",
-      populate: {
-        path: "author",
-        model: "User",
-        select: "id firstname lastname username email avatar",
+  try {
+    const user = await User.findById(req.params.id);
+
+    const populatedUser = await User.populate(user, [
+      {
+        path: "recipes",
+        populate: {
+          path: "author",
+          model: "User",
+          select: "id firstname lastname username email avatar",
+        },
+        options: { sort: { createdAt: -1 } },
       },
-      options: { sort: { createdAt: -1 } },
-    },
-    {
-      path: "cookingBook",
-      populate: {
-        path: "author",
-        model: "User",
-        select: "id firstname lastname username email avatar",
+      {
+        path: "cookingBook",
+        populate: {
+          path: "author",
+          model: "User",
+          select: "id firstname lastname username email avatar",
+        },
+        options: { sort: { createdAt: -1 } },
       },
-      options: { sort: { createdAt: -1 } },
-    },
-    {
-      path: "followers",
-      options: { sort: { createdAt: -1 } },
-    },
-    {
-      path: "following",
-      options: { sort: { createdAt: -1 } },
-    },
-  ]);
-  return res.json(populatedUser);
+      {
+        path: "followers",
+        options: { sort: { createdAt: -1 } },
+      },
+      {
+        path: "following",
+        options: { sort: { createdAt: -1 } },
+      },
+    ]);
+    return res.json(populatedUser);
+  } catch (error) {
+    return res.status(500).json({ message: "Error occurred in the request" });
+  }
 }
 
 async function store(req, res) {
