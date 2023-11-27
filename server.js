@@ -4,6 +4,8 @@ const cors = require("cors");
 const methodOverride = require("method-override");
 const path = require("path");
 
+const sessions = require("./sessions");
+const passport = require("./passport");
 const routes = require("./routes");
 
 const APP_PORT = process.env.APP_PORT || 3000;
@@ -17,6 +19,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 routes(app);
+sessions(app);
+passport(app);
 
 app.listen(APP_PORT, () => {
   console.log(`\n[Express] Servidor corriendo en el puerto ${APP_PORT}`);
@@ -26,9 +30,7 @@ app.listen(APP_PORT, () => {
 process.on("SIGINT", function () {
   const { mongoose } = require("./db");
   mongoose.connection.close(function () {
-    console.log(
-      "Mongoose default connection is disconnected due to application termination.\n"
-    );
+    console.log("Mongoose default connection is disconnected due to application termination.\n");
     process.exit(0);
   });
 });
