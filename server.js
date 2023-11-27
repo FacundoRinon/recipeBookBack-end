@@ -12,7 +12,7 @@ const APP_PORT = process.env.APP_PORT || 3000;
 const app = express();
 
 const corsOptions = {
-  origin: "https://recipe-book-front-five.vercel.app",
+  origin: "https://recipebookproject.vercel.app/",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
