@@ -12,7 +12,7 @@ router.get("/", userController.index);
 // router.get("/profile", userController.show);
 // router.post("/create", userController.create);
 // router.update("/../", userController.edit);
-router.get("/:id", userController.getUser);
+router.get("/:id", userController.show);
 router.patch("/", userController.update);
 router.patch("/:id", userController.follows);
 router.patch("/book/:id", userController.addToBook);

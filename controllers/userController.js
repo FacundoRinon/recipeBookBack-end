@@ -84,11 +84,9 @@ async function index(req, res) {
   });
 }
 
-async function show(req, res) {}
-
 async function create(req, res) {}
 
-async function getUser(req, res) {
+async function show(req, res) {
   const user = await User.findById(req.params.id);
   const populatedUser = await User.populate(user, [
     {
@@ -276,7 +274,6 @@ module.exports = {
   index,
   show,
   create,
-  getUser,
   store,
   edit,
   update,
