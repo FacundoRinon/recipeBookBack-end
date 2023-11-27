@@ -60,14 +60,18 @@ async function category(req, res) {
 }
 
 async function show(req, res) {
-  const recipe = await Recipes.findById(req.params.id);
-  const populatedRecipe = await Recipes.populate(recipe, [
-    {
-      path: "author",
-      select: "id firstname lastname username email avatar score",
-    },
-  ]);
-  return res.json(populatedRecipe);
+  try {
+    const recipe = await Recipes.findById(req.params.id);
+    const populatedRecipe = await Recipes.populate(recipe, [
+      {
+        path: "author",
+        select: "id firstname lastname username email avatar score",
+      },
+    ]);
+    return res.json(populatedRecipe);
+  } catch (error) {
+    return res.status(500).json({ message: "Error occurred in the request" });
+  }
 }
 
 async function create(req, res) {}
@@ -152,11 +156,11 @@ async function update(req, res) {
     const recipe = await Recipes.findById(recipeId);
 
     if (!recipe) {
-      return res.status(404).send("Receta no encontrada");
+      return res.status(404).send("noRecipe");
     }
 
     if (recipe.author.toString() !== req.auth.id) {
-      return res.status(403).send("No tienes permisos para actualizar esta receta");
+      return res.status(403).send("Not allowed");
     }
     recipe.name = name || recipe.name;
     recipe.description = description || recipe.description;
