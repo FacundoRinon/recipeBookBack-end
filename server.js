@@ -11,14 +11,7 @@ const routes = require("./routes");
 const APP_PORT = process.env.APP_PORT || 3000;
 const app = express();
 
-const corsOptions = {
-  origin: "https://recipebookproject.vercel.app/",
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true,
-  optionsSuccessStatus: 204,
-};
-
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
