@@ -186,11 +186,11 @@ async function update(req, res) {
       avatarFileName = `image_${Date.now()}${ext}`;
 
       const { data, error } = await supabase.storage
-        .from("recipe")
+        .from("recipebookimages")
         .upload(avatarFileName, fs.createReadStream(files.avatar.filepath), {
           cacheControl: "3600",
           upsert: false,
-          contextType: files.avatar.mimetype,
+          contentType: files.avatar.mimetype,
           duplex: "half",
         });
     } else {
